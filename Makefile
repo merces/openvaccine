@@ -1,6 +1,6 @@
 C=gcc
 SRC=src/openvaccine.c
-CFLAGS=-W -Wall -Wextra -std=c99
+CFLAGS=-W -Wall -Wextra -g
 	
 all:
 	$(CC) $(CFLAGS) $(DFLAGS) -o openvaccine $(SRC)

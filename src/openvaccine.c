@@ -1,7 +1,7 @@
 /*
 	OpenVaccine - utility to protect USB storage media against infections
 
-	Copyright (C) 2011 - Fernando Mercês <fernando@mentebinaria.com.br>
+	Copyright (C) 2012 - Fernando Mercês <fernando@mentebinaria.com.br>
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #define PROGRAM "OpenVaccine"
 #define VERSION "0.9"
 #define BANNER \
-printf("\n%s %s\nby Fernando Mercês (fernando@mentebinaria.com.br)\n\n", PROGRAM, VERSION);
+printf("\n%s %s\nby Fernando Mercês (fernando@mentebinaria.com.br)\n\n", PROGRAM, VERSION)
 
 #define KILO 1024.0F
 #define MEGA (KILO*KILO)
@@ -112,7 +112,7 @@ typedef struct _FAT_DATA_DIRECTORY
 
 void usage(void)
 {
-	BANNER
+	BANNER;
 	printf("Usage: openvaccine [partition]\nExample: openvaccine /dev/sdc1\n\n");
 	exit(1);
 }
@@ -169,10 +169,11 @@ int main(int argc, char *argv[])
 	FAT_DATA_DIRECTORY data;
 	register int i;
 	long long size;
-	char *autorun_path;
-	char *mountpoint;
+	char *autorun_path = NULL;
+	char *mountpoint = NULL;
 	const char *file = "autorun.inf";
 	const char s[] = "@MenteBinaria";
+	unsigned int path_size = 0;
 
 	// atributos 0x2 (oculto) e 0x40 (nao usado 1)
 	const BYTE attr = 0x42;
@@ -187,10 +188,22 @@ int main(int argc, char *argv[])
 	}	
 
 	// aloca memória para a variável que vai guardar o path do autorun.inf
-	autorun_path = (char *) malloc(strlen(mountpoint) + strlen(file) + 1);
+	path_size += (strlen(mountpoint) + strlen(file)) * 2;
+
+	autorun_path = (char *) malloc(sizeof(char) * path_size * 2);
+	memset(autorun_path, 0, path_size * 2);
+
+	if (autorun_path == NULL)
+	{
+		fprintf(stderr, "not enough memory\n");
+		exit(1);
+	}
+
 	sprintf(autorun_path, "%s/%s", mountpoint, file);	
 
-	if ( (fp = fopen(argv[1], "r+b")) == NULL )
+	fp = fopen(argv[1], "r+b");
+
+	if (fp == NULL)
 	{
 		fprintf(stderr, "error opening partition %s\n", argv[1]);
 		exit(1);
@@ -211,7 +224,7 @@ int main(int argc, char *argv[])
 	}
 
 	// exibe informações sobre a partição
-	BANNER
+	BANNER;
 	printf("Partition %s mounted on %s\n + ", argv[1], mountpoint);
 
 	for (i=0; isalnum(bs.FileSystem[i]); i++)
@@ -248,7 +261,8 @@ int main(int argc, char *argv[])
 	}
 
 	fwrite(&s, strlen(s), 1, mp);
-	free(autorun_path);
+	if (autorun_path)
+		free(autorun_path);
 	fclose(mp);	
 
 	/* o diretório de dados começa em "setores reservados + (setores por FAT * numero de FAT's)" mas
@@ -304,4 +318,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-

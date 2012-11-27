@@ -6,14 +6,20 @@ Legend:
 - Bug fixed
 ! Known issue / missing feature
 
+OpenVaccine 0.91 - ??
+ - fixed bug in buffer management (thanks to Alan Carvalho for eporting)
+ - added error checking.
+ - missing support for long file names (LFN) in FAT-32.
+ - missing support for NTFS partitions.
+
 OpenVaccine 0.9 - November 7, 2011
- + Added confirmation before writing.
- + Added file size check when setting autorun.inf attributes.
- * Automatic mount point recognization.
- * Size calculation without float point numbers.
- - Fixed: OpenVaccine prints wrong partiion size.
- - Fixed: memory leak.
- ! Support for FAT-32 partitions only.
+ + added confirmation before writing.
+ + added file size check when setting autorun.inf attributes.
+ * automatic mount point recognization.
+ * size calculation without float point numbers.
+ - fixed: OpenVaccine prints wrong partiion size.
+ - fixed: memory leak.
+ ! support for FAT-32 partitions only.
 
 OpenVaccine 0.8 - October 30, 2011
-   Initial beta release.
+   first beta release.

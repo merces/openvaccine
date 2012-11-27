@@ -27,10 +27,10 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
 
-// macros
 #define PROGRAM "OpenVaccine"
-#define VERSION "0.9"
+#define VERSION "0.91"
 #define BANNER \
 printf("\n%s %s\nby Fernando Mercês (fernando@mentebinaria.com.br)\n\n", PROGRAM, VERSION)
 
@@ -38,74 +38,68 @@ printf("\n%s %s\nby Fernando Mercês (fernando@mentebinaria.com.br)\n\n", PROGRA
 #define MEGA (KILO*KILO)
 #define GIGA (MEGA*KILO)
 
-typedef char CHAR;
-typedef unsigned char BYTE;
-typedef unsigned short WORD;
-typedef unsigned int DWORD;
-typedef unsigned long QWORD;
-
 // seta o alinhamento de estrututas para 1 byte (necessário para integridade dos structs)
 #pragma pack(push, 1)
 
 // FAT32 Boot Sector
 typedef struct _FAT32_BOOTSECTOR
 {
-	BYTE	jmp[3];
-	CHAR	OemName[8];
-	WORD	BytesPerSector;
-	BYTE	SectorsPerCluster;
-	WORD	ReservedSectors;
-	BYTE	NumberOfFATs;
-	WORD	RootEntries;
-	WORD	TotalSectors;
-	BYTE	Media;
-	WORD	SectorsPerFAT;
-	WORD	SectorsPerTrack;
-	WORD	HeadsPerCylinder;
-	DWORD	HiddenSectors;
-	DWORD	BigTotalSectors;
-	DWORD	BigSectorsPerFAT;
-	WORD	Flags;
-	WORD	Version;
-	DWORD	RootCluster;
-	WORD	InfoSector;
-	WORD	BootBackupStart;
-	BYTE	Reserved[12];
-	BYTE	DriveNumber;
-	BYTE	Unused;
-	BYTE	ExtBootSignature;
-	DWORD	SerialNumber;
-	CHAR	VolumeLabel[11];
-	CHAR	FileSystem[8];
-	BYTE	BootCode[422];
+	uint8_t	jmp[3];
+	int8_t	OemName[8];
+	uint16_t	BytesPerSector;
+	uint8_t	SectorsPerCluster;
+	uint16_t	ReservedSectors;
+	uint8_t	NumberOfFATs;
+	uint16_t	RootEntries;
+	uint16_t	TotalSectors;
+	uint8_t	Media;
+	uint16_t	SectorsPerFAT;
+	uint16_t	SectorsPerTrack;
+	uint16_t	HeadsPerCylinder;
+	uint32_t	HiddenSectors;
+	uint32_t	BigTotalSectors;
+	uint32_t	BigSectorsPerFAT;
+	uint16_t	Flags;
+	uint16_t	Version;
+	uint32_t	RootCluster;
+	uint16_t	InfoSector;
+	uint16_t	BootBackupStart;
+	uint8_t	Reserved[12];
+	uint8_t	DriveNumber;
+	uint8_t	Unused;
+	uint8_t	ExtBootSignature;
+	uint32_t	SerialNumber;
+	int8_t	VolumeLabel[11];
+	int8_t	FileSystem[8];
+	uint8_t	BootCode[422];
 } FAT32_BOOTSECTOR;
 
 // FAT-32 Data Directory
 typedef struct _FAT_DATA_DIRECTORY
 {
-	BYTE Name[11];
+	uint8_t Name[11];
 	/*union
 	{
-		BYTE ReadOnly:1;
-		BYTE Hidden:1;
-		BYTE System:1;
-		BYTE VolumeLabel:1;
-		BYTE Subdirectory:1;
-		BYTE Archive:1;
-		BYTE Unused1:1;
-		BYTE Unused2:1;
+		uint8_t ReadOnly:1;
+		uint8_t Hidden:1;
+		uint8_t System:1;
+		uint8_t VolumeLabel:1;
+		uint8_t Subdirectory:1;
+		uint8_t Archive:1;
+		uint8_t Unused1:1;
+		uint8_t Unused2:1;
 	} Attributes;*/
-	BYTE Attributes;
-	BYTE Reserved;
-	BYTE TimeRes;
-	WORD CreationTime;
-	WORD CreationDate;
-	WORD AccessTime;
-	WORD EAIndex;
-	WORD ModifiedTime;
-	WORD ModifiedDate;
-	WORD FirstCluster;
-	DWORD FileSize;
+	uint8_t Attributes;
+	uint8_t Reserved;
+	uint8_t TimeRes;
+	uint16_t CreationTime;
+	uint16_t CreationDate;
+	uint16_t AccessTime;
+	uint16_t EAIndex;
+	uint16_t ModifiedTime;
+	uint16_t ModifiedDate;
+	uint16_t FirstCluster;
+	uint32_t FileSize;
 } FAT_DATA_DIRECTORY;
 
 #pragma pack(pop)
@@ -127,9 +121,12 @@ char *getmount(const char *partition)
 	struct mntent *m;
 	char *mntpnt = NULL;
 
-	while ( (m = getmntent(f)) )
+	if (!f)
+		return NULL;
+
+	while ((m = getmntent(f)))
 	{
-		if (! strcmp(m->mnt_fsname, partition) )
+		if (!strcmp(m->mnt_fsname, partition))
 		{
 			mntpnt = m->mnt_dir;
 			break;
@@ -142,11 +139,12 @@ char *getmount(const char *partition)
 
 void confirm(void)
 {
-	// função de confirmação (yes/no)
 	char op;
+
 	printf("Writing in low level has a risk.\nPlease, backup your data first. Continue (y/N)? ");
 	scanf("%c", &op);
 	printf("\n");
+
 	if (tolower(op) != 'y')
 		exit(0);
 }
@@ -167,7 +165,7 @@ int main(int argc, char *argv[])
 	FILE *fp, *mp;
 	FAT32_BOOTSECTOR bs;
 	FAT_DATA_DIRECTORY data;
-	register int i;
+	register unsigned int i;
 	long long size;
 	char *autorun_path = NULL;
 	char *mountpoint = NULL;
@@ -176,7 +174,7 @@ int main(int argc, char *argv[])
 	unsigned int path_size = 0;
 
 	// atributos 0x2 (oculto) e 0x40 (nao usado 1)
-	const BYTE attr = 0x42;
+	const uint8_t attr = 0x42;
 
 	if (argv[1] == NULL || argc > 2)
 		usage();
@@ -188,29 +186,26 @@ int main(int argc, char *argv[])
 	}	
 
 	// aloca memória para a variável que vai guardar o path do autorun.inf
-	path_size += (strlen(mountpoint) + strlen(file)) * 2;
+	path_size += strlen(mountpoint) + strlen(file) + 2;
+	autorun_path = (char *) malloc(sizeof(char) * path_size);
 
-	autorun_path = (char *) malloc(sizeof(char) * path_size * 2);
-	memset(autorun_path, 0, path_size * 2);
-
-	if (autorun_path == NULL)
+	if (!autorun_path)
 	{
 		fprintf(stderr, "not enough memory\n");
 		exit(1);
 	}
 
 	sprintf(autorun_path, "%s/%s", mountpoint, file);	
-
 	fp = fopen(argv[1], "r+b");
 
-	if (fp == NULL)
+	if (!fp)
 	{
 		fprintf(stderr, "error opening partition %s\n", argv[1]);
 		exit(1);
 	}
 
 	// lê o bootsector (primeiro setor da particao) para o struct bs
-	if ( fread(&bs, sizeof(FAT32_BOOTSECTOR), 1, fp) != 1 )
+	if (fread(&bs, sizeof(FAT32_BOOTSECTOR), 1, fp) != 1)
 	{
 		fprintf(stderr, "error reading boot sector of partition %s\n", argv[1]);
 		exit(1);
@@ -254,15 +249,14 @@ int main(int argc, char *argv[])
 	
 	mp = fopen(autorun_path, "w");
 
-	if (mp == NULL)
+	if (!mp)
 	{
 		fprintf(stderr, "unable to write %s\n\n", autorun_path);
 		exit(1);
 	}
 
 	fwrite(&s, strlen(s), 1, mp);
-	if (autorun_path)
-		free(autorun_path);
+	free(autorun_path);
 	fclose(mp);	
 
 	/* o diretório de dados começa em "setores reservados + (setores por FAT * numero de FAT's)" mas
@@ -275,7 +269,7 @@ int main(int argc, char *argv[])
 		/*if ( data.Attributes == 0x0f &&
 			data.TimeRes == lfn_checksum( (unsigned char *) "AUTORUN INF") )
 		{
-				BYTE z[sizeof(FAT_DATA_DIRECTORY)];
+				uint8_t z[sizeof(FAT_DATA_DIRECTORY)];
 				
 				memset(z, 0, sizeof(FAT_DATA_DIRECTORY));
 				fseek(fp, - sizeof(FAT_DATA_DIRECTORY), SEEK_CUR);
@@ -293,7 +287,7 @@ int main(int argc, char *argv[])
 			/* posiciona no byte de atributos e grava attr */
 			fseek(fp, - (sizeof(FAT_DATA_DIRECTORY) - sizeof(data.Name)), SEEK_CUR);
 		
-			if (fwrite(&attr, sizeof(BYTE), 1, fp))
+			if (fwrite(&attr, sizeof(uint8_t), 1, fp))
 			{
 				unsigned long ofs, sector;
 
@@ -315,6 +309,5 @@ int main(int argc, char *argv[])
 	}
 
 	fclose(fp);
-
 	return 0;
 }

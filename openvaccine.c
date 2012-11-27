@@ -41,44 +41,42 @@ printf("\n%s %s\nby Fernando Mercês (fernando@mentebinaria.com.br)\n\n", PROGRA
 // seta o alinhamento de estrututas para 1 byte (necessário para integridade dos structs)
 #pragma pack(push, 1)
 
-// FAT32 Boot Sector
 typedef struct _FAT32_BOOTSECTOR
 {
-	uint8_t	jmp[3];
-	int8_t	OemName[8];
-	uint16_t	BytesPerSector;
-	uint8_t	SectorsPerCluster;
-	uint16_t	ReservedSectors;
-	uint8_t	NumberOfFATs;
-	uint16_t	RootEntries;
-	uint16_t	TotalSectors;
-	uint8_t	Media;
-	uint16_t	SectorsPerFAT;
-	uint16_t	SectorsPerTrack;
-	uint16_t	HeadsPerCylinder;
-	uint32_t	HiddenSectors;
-	uint32_t	BigTotalSectors;
-	uint32_t	BigSectorsPerFAT;
-	uint16_t	Flags;
-	uint16_t	Version;
-	uint32_t	RootCluster;
-	uint16_t	InfoSector;
-	uint16_t	BootBackupStart;
-	uint8_t	Reserved[12];
-	uint8_t	DriveNumber;
-	uint8_t	Unused;
-	uint8_t	ExtBootSignature;
-	uint32_t	SerialNumber;
-	int8_t	VolumeLabel[11];
-	int8_t	FileSystem[8];
-	uint8_t	BootCode[422];
+	uint8_t jmp[3];
+	int8_t OemName[8];
+	uint16_t BytesPerSector;
+	uint8_t SectorsPerCluster;
+	uint16_t ReservedSectors;
+	uint8_t NumberOfFATs;
+	uint16_t RootEntries;
+	uint16_t TotalSectors;
+	uint8_t Media;
+	uint16_t SectorsPerFAT;
+	uint16_t SectorsPerTrack;
+	uint16_t HeadsPerCylinder;
+	uint32_t HiddenSectors;
+	uint32_t BigTotalSectors;
+	uint32_t BigSectorsPerFAT;
+	uint16_t Flags;
+	uint16_t Version;
+	uint32_t RootCluster;
+	uint16_t InfoSector;
+	uint16_t BootBackupStart;
+	uint8_t Reserved[12];
+	uint8_t DriveNumber;
+	uint8_t Unused;
+	uint8_t ExtBootSignature;
+	uint32_t SerialNumber;
+	int8_t VolumeLabel[11];
+	int8_t FileSystem[8];
+	uint8_t BootCode[422];
 } FAT32_BOOTSECTOR;
 
-// FAT-32 Data Directory
 typedef struct _FAT_DATA_DIRECTORY
 {
 	uint8_t Name[11];
-	/*union
+	union
 	{
 		uint8_t ReadOnly:1;
 		uint8_t Hidden:1;
@@ -88,8 +86,7 @@ typedef struct _FAT_DATA_DIRECTORY
 		uint8_t Archive:1;
 		uint8_t Unused1:1;
 		uint8_t Unused2:1;
-	} Attributes;*/
-	uint8_t Attributes;
+	} Attributes;
 	uint8_t Reserved;
 	uint8_t TimeRes;
 	uint16_t CreationTime;
@@ -179,7 +176,7 @@ int main(int argc, char *argv[])
 	if (argv[1] == NULL || argc > 2)
 		usage();
 		
-	if ( (mountpoint = getmount(argv[1])) == NULL)
+	if ((mountpoint = getmount(argv[1])) == NULL)
 	{
 		fprintf(stderr, "partition %s not mounted\n", argv[1]);
 		exit(1);

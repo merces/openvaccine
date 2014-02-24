@@ -7,7 +7,7 @@ Legend:
 ! Known issue / missing feature
 
 OpenVaccine 0.91 - ??
- - fixed bug in buffer management (thanks to Alan Carvalho for eporting)
+ - fixed bug in buffer management (thanks to Alan Carvalho for reporting)
  - added error checking.
  - missing support for long file names (LFN) in FAT-32.
  - missing support for NTFS partitions.

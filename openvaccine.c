@@ -1,7 +1,7 @@
 /*
 	OpenVaccine - utility to protect USB storage media against infections
 
-	Copyright (C) 2012 - Fernando Mercês <fernando@mentebinaria.com.br>
+	Copyright (C) 2012 - 2014 - Fernando Mercês
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #define PROGRAM "OpenVaccine"
 #define VERSION "0.91"
 #define BANNER \
-printf("\n%s %s\nby Fernando Mercês (fernando@mentebinaria.com.br)\n\n", PROGRAM, VERSION)
+printf("\n%s %s\nby Fernando Mercês\n\n", PROGRAM, VERSION)
 
 #define KILO 1024.0F
 #define MEGA (KILO*KILO)

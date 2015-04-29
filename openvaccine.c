@@ -1,7 +1,7 @@
 /*
 	OpenVaccine - utility to protect USB storage media against infections
 
-	Copyright (C) 2012 - 2014 - Fernando Mercês
+	Copyright (C) 2012 - 2015 - Fernando Mercês
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ printf("\n%s %s\nby Fernando Mercês\n\n", PROGRAM, VERSION)
 #define MEGA (KILO*KILO)
 #define GIGA (MEGA*KILO)
 
-// seta o alinhamento de estrututas para 1 byte (necessário para integridade dos structs)
+// set struct alignment in memory to 1 byte
 #pragma pack(push, 1)
 
 typedef struct _FAT32_BOOTSECTOR
@@ -109,8 +109,8 @@ void usage(void)
 }
 
 /*
- retorna o ponto de montagem a partir do 'device' da partição
- agradecimentos a @computer4en6 e @andersonc0d3
+ returns the mount point from device
+ thanks to @computer4en6 and @andersonc0d3
 */
 char *getmount(const char *partition)
 {
@@ -182,7 +182,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}	
 
-	// aloca memória para a variável que vai guardar o path do autorun.inf
 	path_size += strlen(mountpoint) + strlen(file) + 2;
 	autorun_path = (char *) malloc(sizeof(char) * path_size);
 
@@ -201,21 +200,21 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	// lê o bootsector (primeiro setor da particao) para o struct bs
+	// read bootsector (first partition sector) to bs struct
 	if (fread(&bs, sizeof(FAT32_BOOTSECTOR), 1, fp) != 1)
 	{
 		fprintf(stderr, "error reading boot sector of partition %s\n", argv[1]);
 		exit(1);
 	}
 
-	// testa se e uma particao FAT-32
+	// check if it is a FAT-32 formatted partition
 	if (memcmp(bs.FileSystem, "FAT32", 5) )
 	{
 		fprintf(stderr, "partition %s is not FAT-32\n\n", argv[1]);
 		exit(1);
 	}
 
-	// exibe informações sobre a partição
+	// shows partition information
 	BANNER;
 	printf("Partition %s mounted on %s\n + ", argv[1], mountpoint);
 
@@ -241,7 +240,6 @@ int main(int argc, char *argv[])
 	printf(" + %dk cluster size\n", bs.SectorsPerCluster * bs.BytesPerSector / 1024);
 	printf(" + serial is %u\n\n", bs.SerialNumber);
 	
-	// confirma antes de escrever na partição
 	confirm();
 	
 	mp = fopen(autorun_path, "w");
@@ -256,8 +254,10 @@ int main(int argc, char *argv[])
 	free(autorun_path);
 	fclose(mp);	
 
-	/* o diretório de dados começa em "setores reservados + (setores por FAT * numero de FAT's)" mas
-	 é preciso multiplicar por BytesPerSector para obter o setor e pular 32 bytes do cabeçalho do diretório */
+	/*
+	 the data directory starts at "ReservedSectors + (BigSectorsPerFAT * NumberOfFATs) but we need to
+	 multiply that by BytesPerSector in order to get the sector and jump the 32-byte directory header
+	*/
 	fseek(fp, 32 + (bs.ReservedSectors + (bs.BigSectorsPerFAT * bs.NumberOfFATs)) * bs.BytesPerSector, SEEK_SET);
 
 	while (fread(&data, sizeof(FAT_DATA_DIRECTORY), 1, fp))
@@ -275,13 +275,12 @@ int main(int argc, char *argv[])
 				continue;
 		}*/
 	
-		/* le cada entrada no diretorio de dados ate achar o autorun.inf
-			recem-criado (TODO: checar CreatedTime) */
+		// read each directory entry until find the autorun.inf file
 
 		if ( !strncasecmp( (char *)data.Name, "AUTORUN INF", sizeof(data.Name)) )
 		//&& (data.FileSize == strlen(file)) )
 		{
-			/* posiciona no byte de atributos e grava attr */
+			// set file pointer in the FAT attributes byte
 			fseek(fp, - (sizeof(FAT_DATA_DIRECTORY) - sizeof(data.Name)), SEEK_CUR);
 		
 			if (fwrite(&attr, sizeof(uint8_t), 1, fp))
